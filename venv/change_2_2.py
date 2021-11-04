@@ -12,6 +12,7 @@ def dict_json():
     sheet = excel_file.active
     raw_number = 0
     n = 1
+    n = 2
     for i in sheet['B']:
         if i.value:
             number = 'B{}'.format(n)
