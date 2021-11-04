@@ -4,7 +4,7 @@ import zipfile
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
-
+# для работы с локальным словарем в виде Json файла
 # def dict_json():
 #     with open('ValueOfVariables.json', 'r') as json_file:
 #         keys_for_role_name = json.load(json_file)
@@ -73,7 +73,8 @@ def main_f():
         # замена имени роли на fieldName
         for role_name in mass_for_pars:
             field_name_role = sequential_approval_request[i]['roleVariables'][role_name.replace(' ', '')]['fieldName']
-            managed_object = sequential_approval_request[i]['roleVariables'][role_name.replace(' ', '')]['managedObject']
+            managed_object = sequential_approval_request[i]['roleVariables']\
+                                                        [role_name.replace(' ', '')]['managedObject']
             dict_2[role_name] = field_name_role
             if managed_object == 'managed/is':
                 mass_for_pars[s] = str('templates.managed.form.is.' + field_name_role)
