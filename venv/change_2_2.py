@@ -30,13 +30,13 @@ from openpyxl.styles import Font
 #         raw_number += 1
 #     excel_file.save('Этапы согласования.xlsx')
 
+
 def main_f():
     wb = Workbook()
     ws = wb.active
     separator = '\u2192'  # красивый разделить для excel между ролями
     with open('SequentialApprovalRequest.json', 'r', encoding='utf-8') as json_file:
         sequential_approval_request = json.load(json_file)  # cериализация json файла
-    raw_in_column = 2
     # заголовки столбцов + выделение жирным шрифтом
     ws['A1'] = 'Имя информационного ресурса'
     ws['B1'] = 'Этапы согласования'
@@ -49,6 +49,7 @@ def main_f():
     number_name_ir_list = 0
     name_role_for_ir = list(sequential_approval_request[name_ir_list[number_name_ir_list]]['roleVariables'].keys())
     number_role_field_name = 0
+    raw_in_column = 2
     for i in sequential_approval_request.keys():
         number_column_a = 'A{}'.format(raw_in_column)
         number_column_b = 'B{}'.format(raw_in_column)
@@ -83,10 +84,10 @@ def main_f():
                 dict_1[field_name_role] = mass_for_pars[s]
             s += 1
 
-        #url_translation_ru = jar_unzip() # если получится реализовать запуск на linux
+        # url_translation_ru = jar_unzip() # если получится реализовать запуск на linux
         # отправляем парсить и получать значения в функцию
         if len(mass_for_pars) > 0:
-             return_mass_value = find_value(mass_for_pars)
+            return_mass_value = find_value(mass_for_pars)
         # cловарь декодироввных переменных и их fieldName
         result_dict_value = {}
         dict_3 = {}
@@ -116,17 +117,28 @@ def main_f():
                 row_role[g]= new_dict_2[row]
             g +=1
         # проверяем есть ли линейный - если есть добавляем его в стоблец В
-        if sequential_approval_request[name_ir_list[number_name_ir_list]]['managerStage']['isEnabled'] == True \
-                and len(row_role) !=0:
-            row_role.insert(0, 'Линейный руководитель')
-
-            if row_role[1] == '':  # проверка что в массиве нет пустых значений
-                row_role.pop(1)
+        try:
+            if sequential_approval_request[name_ir_list[number_name_ir_list]]['managerStage']['isEnabled'] == True:
+                row_role.insert(0, 'Линейный руководитель')
+                if row_role[1] == '':  # проверка что в массиве нет пустых значений
+                    row_role.pop(1)
+                ws['{}'.format(number_column_b)] = '{}' \
+                    .format(separator.join(row_role)).replace('[', '')\
+                    .replace(']', '')\
+                    .replace("'", "")\
+                    .replace('\\n', '')
+            else:
+                ws['{}'.format(number_column_b)] = '{}'\
+                    .format(separator.join(row_role)).replace('[', '')\
+                    .replace(']', '')\
+                    .replace("'", "")\
+                    .replace('\\n', '')
+        except KeyError:
             ws['{}'.format(number_column_b)] = '{}' \
-                .format(separator.join(row_role)).replace('[', '').replace(']', '').replace("'", "").replace('\\n', '')
-        else:
-            ws['{}'.format(number_column_b)] = '{}'\
-                .format(separator.join(row_role)).replace('[', '').replace(']', '').replace("'", "").replace('\\n', '')
+                .format(separator.join(row_role))\
+                .replace('[', '').replace(']', '')\
+                .replace("'", "")\
+                .replace('\\n', '')
         raw_in_column += 1
         number_name_ir_list += 1
         if len(name_role_for_ir) < number_role_field_name:
