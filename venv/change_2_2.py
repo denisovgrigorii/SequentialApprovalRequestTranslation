@@ -4,7 +4,7 @@ import zipfile
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
-# для работы с локальным словарем в виде Json файла
+# для работы с локальным словарем в виде Json файла как словаря
 # def dict_json():
 #     with open('ValueOfVariables.json', 'r') as json_file:
 #         keys_for_role_name = json.load(json_file)
