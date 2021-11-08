@@ -177,7 +177,7 @@ def jar_unzip() -> str:
     archive.close()
     return 'tmp_script//i18n//translation_ru.properties'
 
-# чек1
+# чек12
 if __name__ == '__main__':
     main_func()
 
