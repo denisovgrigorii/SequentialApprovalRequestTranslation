@@ -1,8 +1,14 @@
 import json
 import zipfile
+import paramiko
+import getpass
+import os
+import shutil
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
+
+#server_ip, log, password = argv
 # для работы с локальным словарем в виде Json файла как словаря
 # def dict_json():
 #     with open('ValueOfVariables.json', 'r') as json_file:
@@ -81,10 +87,10 @@ def main_func():
                 mass_for_pars[s] = str('templates.managed.form.organization.' + field_name_role)
                 dict_1[field_name_role] = mass_for_pars[s]
             s += 1
-        # url_translation_ru = jar_unzip() # если получится реализовать запуск на linux
+        url_translation_ru = jar_unzip() # если получится реализовать запуск на linux
         # отправляем парсить и получать значения в функцию
         if len(mass_for_pars) > 0:
-            return_mass_value = find_value(mass_for_pars)
+            return_mass_value = find_value(mass_for_pars,url_translation_ru)
         # cловарь декодироввных переменных и их fieldName
             result_dict_value = {}
             dict_3 = {}
@@ -154,7 +160,7 @@ def find_value(name_value_for_pars: list = [], url_translation_ru: str = 'transl
                         # удаляем все символы до знака "="
                         dict_value[find_value[0]] = row.split('=', 1)[1].lstrip()
             dict_file.close()
-        with open('translation_r.properties', 'r') as dict_file:
+        with open('translation_ru.properties', 'r') as dict_file:
             for row in dict_file:
                 if len(dict_value) < len(name_value_for_pars):
                     find_value = [x for x in name_value_for_pars if x in row]
@@ -172,13 +178,52 @@ def decode(unicode_role: str) -> str:
 
 # функция вытаскивает из архива если получится реализовать запуск на linux
 def jar_unzip() -> str:
-    archive = zipfile.ZipFile('gazprom-invest-integration-bundle-0.0-SNAPSHOT.jar', 'r')
+    archive = zipfile.ZipFile('integration-bundle.jar', 'r')
     archive.extractall('tmp_script')
     archive.close()
     return 'tmp_script//i18n//translation_ru.properties'
 
-# чек12
+
+# подключение к серверу по SSH
+def ssh_connect(server_ip, login, password):
+    print('ssh authentication is completed')
+    port = 22
+    transport = paramiko.Transport((server_ip, port))
+    transport.connect(username=login, password=password)
+    sftp = paramiko.SFTPClient.from_transport(transport)
+
+    remote_file_with_extensions = '/opt/ankey/ankey/extensions/gazprom-invest-integration-bundle-0.0-SNAPSHOT.jar'
+    remote_file_with_ui = '/opt/ankey/ankey/ui/default/ng/public/i18n/translation_ru.properties'
+    remote_file_with_sequential_approval_request = '/opt/ankey/ankey/conf/SequentialApprovalRequest.json'
+
+    local_file_with_extensions = 'integration-bundle.jar'
+    local_file_with_ui = 'translation_ru.properties'
+    local_file_with_sequential_approval_request = 'SequentialApprovalRequest.json'
+
+    sftp.get(remote_file_with_extensions, local_file_with_extensions)
+    sftp.get(remote_file_with_ui, local_file_with_ui)
+    sftp.get(remote_file_with_sequential_approval_request, local_file_with_sequential_approval_request)
+
+    sftp.put(local_file_with_sequential_approval_request, remote_file_with_sequential_approval_request)
+    sftp.put(local_file_with_extensions, remote_file_with_extensions)
+    sftp.put(local_file_with_ui, remote_file_with_ui)
+    sftp.close()
+    transport.close()
+
+
+# удаление временных файлов\папок
+def remove_tmp_dir():
+    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'tmp_script')
+    file1 = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'integration-bundle.jar')
+    file2 = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'SequentialApprovalRequest.json')
+    file3 = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'translation_ru.properties')
+    shutil.rmtree(path)
+    os.remove(file1)
+    os.remove(file2)
+    os.remove(file3)
+
+
 if __name__ == '__main__':
+    ssh_connect(server_ip=input('Ip address server AnkeyIDM: '), login=input('login: '), password=getpass.getpass())
     main_func()
-
-
+    remove_tmp_dir()
