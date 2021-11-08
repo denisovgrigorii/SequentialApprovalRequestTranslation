@@ -8,34 +8,6 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 
 
-#server_ip, log, password = argv
-# для работы с локальным словарем в виде Json файла как словаря
-# def dict_json():
-#     with open('ValueOfVariables.json', 'r') as json_file:
-#         keys_for_role_name = json.load(json_file)
-#     excel_file = openpyxl.load_workbook('Этапы согласования.xlsx')
-#     sheet = excel_file.active
-#     raw_number = 0
-#     n = 1
-#
-#     for i in sheet['B']:
-#         if i.value:
-#             number = 'B{}'.format(n)
-#             string_excel = i.value
-#             ###правка переменных в соответствии с JSON файлом
-#             new_value_excel = string_excel\
-#                 .replace("'$PBRole'", keys_for_role_name["'$PBRole'"]) \
-#                 .replace("'$UkzRole'", keys_for_role_name["'$UkzRole'"]) \
-#                 .replace("'$TechAdmin'", keys_for_role_name["'$TechAdmin'"])\
-#                 .replace("'$IsAdmin'", keys_for_role_name["'$IsAdmin'"])\
-#                 .replace("'$IusPerformer'", keys_for_role_name["'$IusPerformer'"])\
-#                 .replace("'$OrgOperator'", keys_for_role_name["'$OrgOperator'"])
-#             sheet[number] = new_value_excel
-#         n += 1
-#         raw_number += 1
-#     excel_file.save('Этапы согласования.xlsx')
-
-
 def main_func():
     wb = Workbook()
     ws = wb.active
@@ -50,6 +22,7 @@ def main_func():
     # размеры слобцов
     ws.column_dimensions['A'].width = 50
     ws.column_dimensions['B'].width = 120
+    # переменные для работы с cериализованным json
     name_ir_list = list(sequential_approval_request.keys())
     number_name_ir_list = 0
     raw_in_column = 2
@@ -59,11 +32,7 @@ def main_func():
         ws['{}'.format(number_column_a)] = i
         # собираем все роли для одной ИР в строку
         row_role = "".join(str(sequential_approval_request[name_ir_list[number_name_ir_list]]['stages'])
-                           .replace("[", "")
-                           .replace("]", ""))\
-                           .replace("'", "")\
-                           .replace(' $', '$')\
-                           .split(",")
+                           .replace("[", "").replace("]", "")).replace("'", "").replace(' $', '$').split(",")
         s = 0
         # парсим lookup значения переменных
         mass_for_pars = []
@@ -117,7 +86,7 @@ def main_func():
             row_role = [row.strip(' ') for row in row_role]
             for row in row_role:
                 if row in new_dict_2.keys():
-                    row_role[g]= new_dict_2[row]
+                    row_role[g] = new_dict_2[row]
                 g +=1
         # проверяем есть ли линейный - если есть добавляем его в стоблец В
         try:
@@ -145,6 +114,7 @@ def main_func():
         raw_in_column += 1
         number_name_ir_list += 1
     wb.save("Этапы согласования.xlsx")
+    print("Файл Этапы согласования.xlsx успешно создан в текущей директории")
 
 
 # поиск значений переменных по файлам translation_ru.properties
@@ -186,12 +156,11 @@ def jar_unzip() -> str:
 
 # подключение к серверу по SSH
 def ssh_connect(server_ip, login, password):
-    print('ssh authentication is completed')
     port = 22
     transport = paramiko.Transport((server_ip, port))
     transport.connect(username=login, password=password)
     sftp = paramiko.SFTPClient.from_transport(transport)
-
+    print('ssh authentication is completed')
     remote_file_with_extensions = '/opt/ankey/ankey/extensions/gazprom-invest-integration-bundle-0.0-SNAPSHOT.jar'
     remote_file_with_ui = '/opt/ankey/ankey/ui/default/ng/public/i18n/translation_ru.properties'
     remote_file_with_sequential_approval_request = '/opt/ankey/ankey/conf/SequentialApprovalRequest.json'
@@ -223,7 +192,13 @@ def remove_tmp_dir():
     os.remove(file3)
 
 
+# определение имени интеграционного бандла
+def find_name_bundle():
+    pass
+
+
 if __name__ == '__main__':
-    ssh_connect(server_ip=input('Ip address server AnkeyIDM: '), login=input('login: '), password=getpass.getpass())
+    ssh_connect(server_ip=input('IP address server Ankey IDM: '), login=input('login: '), password=getpass.getpass())
     main_func()
     remove_tmp_dir()
+
