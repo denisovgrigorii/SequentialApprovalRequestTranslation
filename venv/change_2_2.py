@@ -1,5 +1,4 @@
 import json
-import openpyxl
 import zipfile
 from openpyxl import Workbook
 from openpyxl.styles import Font
@@ -31,7 +30,7 @@ from openpyxl.styles import Font
 #     excel_file.save('Этапы согласования.xlsx')
 
 
-def main_f():
+def main_func():
     wb = Workbook()
     ws = wb.active
     separator = '\u2192'  # красивый разделить для excel между ролями
@@ -47,8 +46,6 @@ def main_f():
     ws.column_dimensions['B'].width = 120
     name_ir_list = list(sequential_approval_request.keys())
     number_name_ir_list = 0
-    name_role_for_ir = list(sequential_approval_request[name_ir_list[number_name_ir_list]]['roleVariables'].keys())
-    number_role_field_name = 0
     raw_in_column = 2
     for i in sequential_approval_request.keys():
         number_column_a = 'A{}'.format(raw_in_column)
@@ -83,39 +80,38 @@ def main_f():
                 mass_for_pars[s] = str('templates.managed.form.organization.' + field_name_role)
                 dict_1[field_name_role] = mass_for_pars[s]
             s += 1
-
         # url_translation_ru = jar_unzip() # если получится реализовать запуск на linux
         # отправляем парсить и получать значения в функцию
         if len(mass_for_pars) > 0:
             return_mass_value = find_value(mass_for_pars)
         # cловарь декодироввных переменных и их fieldName
-        result_dict_value = {}
-        dict_3 = {}
-        # decode полученных переменных
-        for value in return_mass_value:
-            decode_value = decode(return_mass_value[value])
-            result_dict_value[value] = decode_value
-        for value in result_dict_value.keys():
-            if value in dict_1.values() and 'templates.managed.form.organization.' in value:
-                dict_3[str(value).replace('templates.managed.form.organization.', '')] = result_dict_value[value]
-            elif value in dict_1.values() and 'templates.managed.form.is.' in value:
-                dict_3[str(value).replace('templates.managed.form.is.', '')] = result_dict_value[value]
-        m = 0
-        value_result_list = [value for value in dict_3.values()]
-        for value in dict_2.keys():
-            dict_2[value] = value_result_list[m]
-            m += 1
-        g = 0
-        # удаляем возможные пробелы в ключах словаря(костыль)
-        new_dict_2 = {}
-        for k, v in dict_2.items():
-            new_dict_2[k.strip()] = v
-        # обновляем list stages c ролями для ИС
-        row_role = [row.strip(' ') for row in row_role]
-        for row in row_role:
-            if row in new_dict_2.keys():
-                row_role[g]= new_dict_2[row]
-            g +=1
+            result_dict_value = {}
+            dict_3 = {}
+            # decode полученных переменных
+            for value in return_mass_value:
+                decode_value = decode(return_mass_value[value])
+                result_dict_value[value] = decode_value
+            for value in result_dict_value.keys():
+                if value in dict_1.values() and 'templates.managed.form.organization.' in value:
+                    dict_3[str(value).replace('templates.managed.form.organization.', '')] = result_dict_value[value]
+                elif value in dict_1.values() and 'templates.managed.form.is.' in value:
+                    dict_3[str(value).replace('templates.managed.form.is.', '')] = result_dict_value[value]
+            m = 0
+            value_result_list = [value for value in dict_3.values()]
+            for value in dict_2.keys():
+                dict_2[value] = value_result_list[m]
+                m += 1
+            g = 0
+            # удаляем возможные пробелы в ключах словаря(костыль)
+            new_dict_2 = {}
+            for k, v in dict_2.items():
+                new_dict_2[k.strip()] = v
+            # обновляем list stages c ролями для ИС
+            row_role = [row.strip(' ') for row in row_role]
+            for row in row_role:
+                if row in new_dict_2.keys():
+                    row_role[g]= new_dict_2[row]
+                g +=1
         # проверяем есть ли линейный - если есть добавляем его в стоблец В
         try:
             if sequential_approval_request[name_ir_list[number_name_ir_list]]['managerStage']['isEnabled'] == True:
@@ -141,13 +137,11 @@ def main_f():
                 .replace('\\n', '')
         raw_in_column += 1
         number_name_ir_list += 1
-        if len(name_role_for_ir) < number_role_field_name:
-            number_role_field_name += 1
     wb.save("Этапы согласования.xlsx")
 
 
 # поиск значений переменных по файлам translation_ru.properties
-def find_value(name_value_for_pars: list, url_translation_ru: str = 'translation_ru.properties') -> list:
+def find_value(name_value_for_pars: list = [], url_translation_ru: str = 'translation_ru.properties') -> list:
     dict_value = {}
     if len(name_value_for_pars) > 0:
         with open(url_translation_ru, 'r') as dict_file:
@@ -175,15 +169,15 @@ def decode(unicode_role: str) -> str:
     return unicode_role.encode().decode('unicode-escape')
 
 
-# функция вытаскивает из архива
+# функция вытаскивает из архива если получится реализовать запуск на linux
 def jar_unzip() -> str:
     archive = zipfile.ZipFile('gazprom-invest-integration-bundle-0.0-SNAPSHOT.jar', 'r')
     archive.extractall('tmp_script')
     archive.close()
     return 'tmp_script//i18n//translation_ru.properties'
 
-
+# чек
 if __name__ == '__main__':
-    main_f()
+    main_func()
 
 
