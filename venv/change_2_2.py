@@ -95,7 +95,7 @@ def jar_unzip() -> str:
     return 'tmp//tmp_script//i18n//translation_ru.properties'
 
 
-# подключение к серверу и отрпвка
+# подключение к серверу и отправка
 def ssh_connect(server_ip, login, password):
     port = 22
     transport = paramiko.Transport((server_ip, port))
