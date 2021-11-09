@@ -1,9 +1,10 @@
-import json
-import zipfile
-import paramiko
 import getpass
+import json
 import os
 import shutil
+import zipfile
+
+import paramiko
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
@@ -21,13 +22,10 @@ def excel_file(upload_json_data):
     # размеры слобцов
     ws.column_dimensions['A'].width = 50
     ws.column_dimensions['B'].width = 120
-    raw_in_column = 2
-    for keys in upload_json_data.keys():
-        number_column_a = 'A{}'.format(raw_in_column)
-        number_column_b = 'B{}'.format(raw_in_column)
-        ws['{}'.format(number_column_a)] = keys
-        ws['{}'.format(number_column_b)] = separator.join(upload_json_data[keys])
-        raw_in_column += 1
+    row_offset = 2
+    for i, keys in enumerate(upload_json_data.keys()):
+        ws['A{}'.format(i + row_offset)] = keys
+        ws['B{}'.format(i + row_offset)] = separator.join(upload_json_data[keys])
     wb.save("Этапы согласования.xlsx")
     print("Файл Этапы согласования.xlsx успешно создан в текущей директории")
 
@@ -36,8 +34,8 @@ def excel_file(upload_json_data):
 def json_file():
     upload_data = []
     upload_json_data = {}
-    with open('tmp//SequentialApprovalRequest.json', 'r', encoding='utf-8') as json_file:
-        sequential_approval_request = json.load(json_file)  # cериализация json файла
+    with open('tmp//SequentialApprovalRequest.json', 'r', encoding='utf-8') as input_file:
+        sequential_approval_request = json.load(input_file)  # cериализация json файла
     name_ir_list = list(sequential_approval_request.keys())
     url_translation_ru = jar_unzip()
     dictionary = create_dict(url_translation_ru)
@@ -51,7 +49,7 @@ def json_file():
             if '$' in stage:
                 field_name = sequential_approval_request[name_ir]['roleVariables'][stage]['fieldName']
                 managed_object = \
-                sequential_approval_request[name_ir]['roleVariables'][stage]['managedObject'].split('/')[1]
+                    sequential_approval_request[name_ir]['roleVariables'][stage]['managedObject'].split('/')[1]
                 excel_list.append(decode(dictionary[managed_object + '.' + field_name]))
             else:
                 excel_list.append(stage)
@@ -71,18 +69,17 @@ def create_dict(url_translation_ru: str = 'translation_ru.properties') -> list:
     out_symbol = 'placeholder'
     with open(url_translation_ru, 'r') as dict_file:
         for row in dict_file:
-            # если какое либо значение из массива есть в строке - записать в find_value
+            # ищем вхождение поля
             if in_symbol in row and out_symbol not in row:
-                # удаляем все символы до знака "="
+                # делим по знаку '=' и сохраняем только тип объекта и его транслитерацию
                 dict_value[row.split('=')[0].replace(in_symbol, '')] = row.split('=')[1].strip()
         dict_file.close()
     with open('tmp//translation_ru.properties', 'r') as dict_file:
         for row in dict_file:
-            for row in dict_file:
-                # если какое либо значение из массива есть в строке - записать в find_value
-                if in_symbol in row and out_symbol not in row:
-                    # удаляем все символы до знака "="
-                    dict_value[row.split('=')[0].replace(in_symbol, '')] = row.split('=')[1].strip()
+            # ищем вхождение поля
+            if in_symbol in row and out_symbol not in row:
+                # делим по знаку '=' и сохраняем только тип объекта и его транслитерацию
+                dict_value[row.split('=')[0].replace(in_symbol, '')] = row.split('=')[1].strip()
         dict_file.close()
     return dict_value
 
@@ -142,4 +139,3 @@ if __name__ == '__main__':
     ssh_connect(server_ip=input('IP address server Ankey IDM: '), login=input('login: '), password=getpass.getpass())
     json_file()
     remove_tmp_dir()
-
