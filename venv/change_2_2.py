@@ -92,16 +92,15 @@ def jar_unzip() -> str:
 
 
 # подключение к серверу и отправка
-def ssh_connect(server_ip, login, password):
+def ssh_connect(server_ip, login, password, ankey_dir, intergation_bundle_name):
     port = 22
     transport = paramiko.Transport((server_ip, port))
     transport.connect(username=login, password=password)
     sftp = paramiko.SFTPClient.from_transport(transport)
     print('ssh authentication is completed')
-    remote_file_with_extensions = '/opt/ankey/ankey/extensions/gazprom-invest-integration-bundle-0.0-SNAPSHOT.jar'
-    remote_file_with_ui = '/opt/ankey/ankey/ui/default/ng/public/i18n/translation_ru.properties'
-    remote_file_with_sequential_approval_request = '/opt/ankey/ankey/conf/SequentialApprovalRequest.json'
-
+    remote_file_with_extensions = ankey_dir + "ankey/extensions/" + intergation_bundle_name
+    remote_file_with_ui = ankey_dir + 'ankey/ui/default/ng/public/i18n/translation_ru.properties'
+    remote_file_with_sequential_approval_request = ankey_dir + 'ankey/conf/SequentialApprovalRequest.json'
     local_file_with_extensions = 'tmp\\integration-bundle.jar'
     local_file_with_ui = 'tmp\\translation_ru.properties'
     local_file_with_sequential_approval_request = 'tmp\\SequentialApprovalRequest.json'
@@ -134,8 +133,19 @@ def find_name_bundle():
     pass
 
 
+# парсинг default json (идет вместе со скриптом)
+def default_json():
+    with open('1.json', 'r', encoding='utf-8') as input_file:
+        default_json_file = json.load(input_file)
+    default_cred = list(default_json_file.keys())
+    return default_json_file[default_cred[0]], default_json_file[default_cred[1]],\
+           default_json_file[default_cred[2]], default_json_file[default_cred[3]]
+
+
 if __name__ == '__main__':
+    default_cred = default_json()
     create_tmp_dir()
-    ssh_connect(server_ip=input('IP address server Ankey IDM: '), login=input('login: '), password=getpass.getpass())
+    ssh_connect(server_ip=default_cred[0], login=default_cred[1], password=getpass.getpass(),
+                ankey_dir=default_cred[2], intergation_bundle_name=default_cred[3])
     json_file()
     remove_tmp_dir()
