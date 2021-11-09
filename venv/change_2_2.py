@@ -3,7 +3,6 @@ import json
 import os
 import shutil
 import zipfile
-
 import paramiko
 from openpyxl import Workbook
 from openpyxl.styles import Font
@@ -120,13 +119,14 @@ def ssh_connect(server_ip, login, password):
 
 # создание временной директории для файлов полученных по sftp
 def create_tmp_dir():
-    os.mkdir('tmp')
+    if os.path.exists('tmp'):
+        shutil.rmtree('tmp')
+    return os.mkdir('tmp')
 
 
 # удаление временных файлов\папок
 def remove_tmp_dir():
-    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'tmp')
-    shutil.rmtree(path)
+    return shutil.rmtree('tmp')
 
 
 # определение имени интеграционного бандла
