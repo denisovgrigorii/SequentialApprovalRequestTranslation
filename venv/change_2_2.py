@@ -4,8 +4,18 @@ import os
 import shutil
 import zipfile
 import paramiko
+import argparse
 from openpyxl import Workbook
 from openpyxl.styles import Font
+
+
+# агрументы для запуска скрипта
+def arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("f", help='если хотите запустить с уникальным словарем необходим аргумент F \n '
+                                  'Если хотите запустить с стандартным словарем проекта D')
+    args_start = parser.parse_args()
+    return args_start
 
 
 # работа с файлом excel
@@ -30,14 +40,12 @@ def excel_file(upload_json_data):
 
 
 # работа с файлом универсальной цепочки
-def json_file():
+def json_file(unique_dictionary: dict = {}, unique_dict_stage: int = 0):
     upload_data = []
     upload_json_data = {}
     with open('tmp//SequentialApprovalRequest.json', 'r', encoding='utf-8') as input_file:
         sequential_approval_request = json.load(input_file)  # cериализация json файла
     name_ir_list = list(sequential_approval_request.keys())
-    # Внешний справочник транслитерации этапов
-    unique_dictionary = unique_dict()
     # Встроенный справочник транслитерации этапов
     url_translation_ru = jar_unzip()
     dictionary = create_dict(url_translation_ru)
@@ -49,7 +57,7 @@ def json_file():
         for stages in sequential_approval_request[name_ir]['stages']:
             stage = stages[0]
             if '$' in stage:
-                if stage in unique_dictionary.keys():
+                if unique_dict_stage == 1 and stage in unique_dictionary.keys():
                     excel_list.append(unique_dictionary[stage])
                 else:
                     field_name = sequential_approval_request[name_ir]['roleVariables'][stage]['fieldName']
@@ -134,18 +142,11 @@ def remove_tmp_dir():
     return shutil.rmtree('tmp')
 
 
-# определение имени интеграционного бандла
-def find_name_bundle():
-    pass
-
-
 # парсинг default json (идет вместе со скриптом)
 def default_json():
     with open('1.json', 'r', encoding='utf-8') as input_file:
         default_json_file = json.load(input_file)
-    default_auth = list(default_json_file.keys())
-    return default_json_file[default_auth[0]], default_json_file[default_auth[1]],\
-           default_json_file[default_auth[2]], default_json_file[default_auth[3]]
+        return default_json_file
 
 
 def unique_dict() -> dict:
@@ -155,9 +156,15 @@ def unique_dict() -> dict:
 
 
 if __name__ == '__main__':
+    args = arguments()
     default_cred = default_json()
     create_tmp_dir()
-    ssh_connect(server_ip=default_cred[0], login=default_cred[1], password=getpass.getpass(),
-                ankey_dir=default_cred[2], intergation_bundle_name=default_cred[3])
-    json_file()
+    ssh_connect(server_ip=default_cred['server_ip'], login=default_cred['login'], password=getpass.getpass(),
+                ankey_dir=default_cred['ankey_dir'], intergation_bundle_name=default_cred['intergation_bundle_name'])
+    if args.f == 'F':
+        unique_dict_stage = 1
+        unique_dictionary = unique_dict()
+        json_file(unique_dictionary, unique_dict_stage)
+    if args.f == 'D':
+        json_file()
     remove_tmp_dir()
