@@ -142,13 +142,14 @@ def remove_tmp_dir():
     return shutil.rmtree('tmp')
 
 
-# парсинг default json (идет вместе со скриптом)
-def default_json():
+# парсинг default json для подключения(1.json)
+def default_json() -> dict:
     with open('1.json', 'r', encoding='utf-8') as input_file:
         default_json_file = json.load(input_file)
         return default_json_file
 
 
+# парсим файл с уникальным словарем названия ролей(unique_dict.json)
 def unique_dict() -> dict:
     with open('unique_dict.json', 'r', encoding='utf-8') as input_file:
         unique_dict_file = json.load(input_file)  # cериализация json файла
