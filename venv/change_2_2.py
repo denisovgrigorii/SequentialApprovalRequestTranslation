@@ -13,7 +13,7 @@ from openpyxl.styles import Font
 def arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("f", help='если хотите запустить с уникальным словарем необходим аргумент F \n '
-                                  'Если хотите запустить с стандартным словарем проекта D')
+                                  'Если хотите запустить с стандартным словарем проекта необходим аргумент D')
     args_start = parser.parse_args()
     return args_start
 
