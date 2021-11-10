@@ -36,6 +36,9 @@ def json_file():
     with open('tmp//SequentialApprovalRequest.json', 'r', encoding='utf-8') as input_file:
         sequential_approval_request = json.load(input_file)  # cериализация json файла
     name_ir_list = list(sequential_approval_request.keys())
+    # Внешний справочник транслитерации этапов
+    unique_dictionary = unique_dict()
+    # Встроенный справочник транслитерации этапов
     url_translation_ru = jar_unzip()
     dictionary = create_dict(url_translation_ru)
     for name_ir in name_ir_list:
@@ -46,10 +49,13 @@ def json_file():
         for stages in sequential_approval_request[name_ir]['stages']:
             stage = stages[0]
             if '$' in stage:
-                field_name = sequential_approval_request[name_ir]['roleVariables'][stage]['fieldName']
-                managed_object = \
-                    sequential_approval_request[name_ir]['roleVariables'][stage]['managedObject'].split('/')[1]
-                excel_list.append(decode(dictionary[managed_object + '.' + field_name]))
+                if stage in unique_dictionary.keys():
+                    excel_list.append(unique_dictionary[stage])
+                else:
+                    field_name = sequential_approval_request[name_ir]['roleVariables'][stage]['fieldName']
+                    managed_object = \
+                        sequential_approval_request[name_ir]['roleVariables'][stage]['managedObject'].split('/')[1]
+                    excel_list.append(decode(dictionary[managed_object + '.' + field_name]))
             else:
                 excel_list.append(stage)
         upload_data.append(excel_list)
@@ -140,6 +146,12 @@ def default_json():
     default_auth = list(default_json_file.keys())
     return default_json_file[default_auth[0]], default_json_file[default_auth[1]],\
            default_json_file[default_auth[2]], default_json_file[default_auth[3]]
+
+
+def unique_dict() -> dict:
+    with open('unique_dict.json', 'r', encoding='utf-8') as input_file:
+        unique_dict_file = json.load(input_file)  # cериализация json файла
+    return unique_dict_file
 
 
 if __name__ == '__main__':
