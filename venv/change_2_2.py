@@ -41,7 +41,7 @@ def json_file():
     for name_ir in name_ir_list:
         excel_list = []
         if 'managerStage' in sequential_approval_request[name_ir].keys() and \
-                sequential_approval_request[name_ir]['managerStage']['isEnabled'] == True:
+                sequential_approval_request[name_ir]['managerStage']['isEnabled'] is True:
             excel_list.append('Линейный руководитель')
         for stages in sequential_approval_request[name_ir]['stages']:
             stage = stages[0]
@@ -62,7 +62,7 @@ def decode(unicode_role: str) -> str:
 
 
 # создание словаря с unicode переменных из файлов транслитерации
-def create_dict(url_translation_ru: str = 'translation_ru.properties') -> list:
+def create_dict(url_translation_ru: str = 'translation_ru.properties') -> dict:
     dict_value = {}
     in_symbol = 'templates.managed.form.'
     out_symbol = 'placeholder'
@@ -137,9 +137,9 @@ def find_name_bundle():
 def default_json():
     with open('1.json', 'r', encoding='utf-8') as input_file:
         default_json_file = json.load(input_file)
-    default_cred = list(default_json_file.keys())
-    return default_json_file[default_cred[0]], default_json_file[default_cred[1]],\
-           default_json_file[default_cred[2]], default_json_file[default_cred[3]]
+    default_auth = list(default_json_file.keys())
+    return default_json_file[default_auth[0]], default_json_file[default_auth[1]],\
+           default_json_file[default_auth[2]], default_json_file[default_auth[3]]
 
 
 if __name__ == '__main__':
