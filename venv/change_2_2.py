@@ -142,9 +142,9 @@ def remove_tmp_dir():
     return shutil.rmtree('tmp')
 
 
-# парсинг default json для подключения(1.json)
+# парсинг default json для подключения(conf.json)
 def default_json() -> dict:
-    with open('1.json', 'r', encoding='utf-8') as input_file:
+    with open('conf.json', 'r', encoding='utf-8') as input_file:
         default_json_file = json.load(input_file)
         return default_json_file
 
