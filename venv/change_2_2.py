@@ -45,7 +45,6 @@ def excel_file(upload_json_data):
 
 # работа с файлом универсальной цепочки
 def json_file(unique_dictionary: dict = {}, unique_dict_stage: int = 0):
-    upload_data = []
     upload_json_data = {}
     with open('tmp//SequentialApprovalRequest.json', 'r', encoding='utf-8') as input_file:
         sequential_approval_request = json.load(input_file)  # cериализация json файла
@@ -71,7 +70,6 @@ def json_file(unique_dictionary: dict = {}, unique_dict_stage: int = 0):
                     excel_list.append(decode(dictionary[managed_object + '.' + field_name]))
             else:
                 excel_list.append(stage)
-        upload_data.append(excel_list)
         upload_json_data[name_ir] = excel_list
         # обработка словаря с именами ИС
         is_dictionary = read_json(IS_DICT)
