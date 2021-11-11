@@ -8,6 +8,10 @@ import argparse
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
+CONFIG_FILE = 'conf.json'
+IS_DICT = 'is_name.json'
+UNIQUE_DICT = 'unique_dict.json'
+
 
 # агрументы для запуска скрипта
 def arguments():
@@ -49,6 +53,7 @@ def json_file(unique_dictionary: dict = {}, unique_dict_stage: int = 0):
     # Встроенный справочник транслитерации этапов
     url_translation_ru = jar_unzip()
     dictionary = create_dict(url_translation_ru)
+
     for name_ir in name_ir_list:
         excel_list = []
         if 'managerStage' in sequential_approval_request[name_ir].keys() and \
@@ -68,6 +73,13 @@ def json_file(unique_dictionary: dict = {}, unique_dict_stage: int = 0):
                 excel_list.append(stage)
         upload_data.append(excel_list)
         upload_json_data[name_ir] = excel_list
+        # обработка словаря с именами ИС
+        is_dictionary = read_json(IS_DICT)
+        if name_ir in is_dictionary.keys():
+            upload_json_data[is_dictionary[name_ir]] = excel_list
+        else:
+            upload_json_data[name_ir] = excel_list
+
     excel_file(upload_json_data)
 
 
@@ -142,30 +154,28 @@ def remove_tmp_dir():
     return shutil.rmtree('tmp')
 
 
-# парсинг default json для подключения(conf.json)
-def default_json() -> dict:
-    with open('conf.json', 'r', encoding='utf-8') as input_file:
-        default_json_file = json.load(input_file)
-        return default_json_file
-
-
-# парсим файл с уникальным словарем названия ролей(unique_dict.json)
-def unique_dict() -> dict:
-    with open('unique_dict.json', 'r', encoding='utf-8') as input_file:
-        unique_dict_file = json.load(input_file)  # cериализация json файла
-    return unique_dict_file
+# универсальный обработчик json
+def read_json(json_f) -> dict:
+    try:
+        with open(json_f, 'r', encoding='utf-8') as input_file:
+            dict_file = json.load(input_file)  # cериализация json файла
+        return dict_file
+    except FileNotFoundError:
+        dict_file = {}
+        return dict_file
 
 
 if __name__ == '__main__':
     args = arguments()
-    default_cred = default_json()
+    default_cred = read_json(CONFIG_FILE)
     create_tmp_dir()
     ssh_connect(server_ip=default_cred['server_ip'], login=default_cred['login'], password=getpass.getpass(),
                 ankey_dir=default_cred['ankey_dir'], intergation_bundle_name=default_cred['intergation_bundle_name'])
     if args.f == 'F':
         unique_dict_stage = 1
-        unique_dictionary = unique_dict()
+        unique_dictionary = read_json(UNIQUE_DICT)
         json_file(unique_dictionary, unique_dict_stage)
     if args.f == 'D':
         json_file()
     remove_tmp_dir()
+

@@ -1,0 +1,6 @@
+{
+	"server_ip":"10.10.110.128",
+	"login":"osadm",
+	"ankey_dir":"/opt/ankey/",
+	"intergation_bundle_name":"gazprom-invest-integration-bundle-0.0-SNAPSHOT.jar"
+}
