@@ -44,7 +44,7 @@ def excel_file(upload_json_data):
 
 
 # работа с файлом универсальной цепочки
-def json_file(unique_dictionary: dict = {}, unique_dict_stage: int = 0):
+def json_file(unique_dictionary: dict = {}, is_unique_dict: bool = False):
     upload_json_data = {}
     with open('tmp//SequentialApprovalRequest.json', 'r', encoding='utf-8') as input_file:
         sequential_approval_request = json.load(input_file)  # cериализация json файла
@@ -61,7 +61,7 @@ def json_file(unique_dictionary: dict = {}, unique_dict_stage: int = 0):
         for stages in sequential_approval_request[name_ir]['stages']:
             stage = stages[0]
             if '$' in stage:
-                if unique_dict_stage == 1 and stage in unique_dictionary.keys():
+                if is_unique_dict is True and stage in unique_dictionary.keys():
                     excel_list.append(unique_dictionary[stage])
                 else:
                     field_name = sequential_approval_request[name_ir]['roleVariables'][stage]['fieldName']
@@ -170,10 +170,9 @@ if __name__ == '__main__':
     ssh_connect(server_ip=default_cred['server_ip'], login=default_cred['login'], password=getpass.getpass(),
                 ankey_dir=default_cred['ankey_dir'], intergation_bundle_name=default_cred['intergation_bundle_name'])
     if args.f == 'F':
-        unique_dict_stage = 1
+        is_unique_dict = True
         unique_dictionary = read_json(UNIQUE_DICT)
-        json_file(unique_dictionary, unique_dict_stage)
+        json_file(unique_dictionary, is_unique_dict)
     if args.f == 'D':
         json_file()
     remove_tmp_dir()
-
