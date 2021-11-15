@@ -12,6 +12,8 @@ CONFIG_FILE = 'conf.json'
 IS_DICT = 'is_name.json'
 UNIQUE_DICT = 'unique_dict.json'
 
+DEFAULT_SEPARATOR = ' \u2192 '
+SINGLE_STAGE_SEPARATOR = ' || '
 
 # агрументы для запуска скрипта
 def arguments():
@@ -26,7 +28,7 @@ def arguments():
 def excel_file(upload_json_data):
     wb = Workbook()
     ws = wb.active
-    separator = '\u2192'  # красивый разделить для excel между ролями
+    separator = DEFAULT_SEPARATOR  # красивый разделить для excel между ролями
     # заголовки столбцов + выделение жирным шрифтом
     ws['A1'] = 'Имя информационного ресурса'
     ws['B1'] = 'Этапы согласования'
@@ -59,17 +61,20 @@ def json_file(unique_dictionary: dict = {}, is_unique_dict: bool = False):
                 sequential_approval_request[name_ir]['managerStage']['isEnabled'] is True:
             excel_list.append('Линейный руководитель')
         for stages in sequential_approval_request[name_ir]['stages']:
-            stage = stages[0]
-            if '$' in stage:
-                if is_unique_dict is True and stage in unique_dictionary.keys():
-                    excel_list.append(unique_dictionary[stage])
+            current_stage = []
+            for stage in stages:
+                if '$' in stage:
+                    if is_unique_dict is True and stage in unique_dictionary.keys():
+                        current_stage.append(unique_dictionary[stage])
+                    else:
+                        field_name = sequential_approval_request[name_ir]['roleVariables'][stage]['fieldName']
+                        managed_object = \
+                            sequential_approval_request[name_ir]['roleVariables'][stage]['managedObject'].split('/')[1]
+                        current_stage.append(decode(dictionary[managed_object + '.' + field_name]))
                 else:
-                    field_name = sequential_approval_request[name_ir]['roleVariables'][stage]['fieldName']
-                    managed_object = \
-                        sequential_approval_request[name_ir]['roleVariables'][stage]['managedObject'].split('/')[1]
-                    excel_list.append(decode(dictionary[managed_object + '.' + field_name]))
-            else:
-                excel_list.append(stage)
+                    current_stage.append(stage)
+            excel_list.append(SINGLE_STAGE_SEPARATOR.join(current_stage))
+            current_stage.clear()
         upload_json_data[name_ir] = excel_list
         # обработка словаря с именами ИС
         is_dictionary = read_json(IS_DICT)
