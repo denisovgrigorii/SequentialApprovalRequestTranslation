@@ -15,6 +15,7 @@ UNIQUE_DICT = 'unique_dict.json'
 DEFAULT_SEPARATOR = ' \u2192 '
 SINGLE_STAGE_SEPARATOR = ' || '
 
+
 # агрументы для запуска скрипта
 def arguments():
     parser = argparse.ArgumentParser()
@@ -54,6 +55,8 @@ def json_file(unique_dictionary: dict = {}, is_unique_dict: bool = False):
     # Встроенный справочник транслитерации этапов
     url_translation_ru = jar_unzip()
     dictionary = create_dict(url_translation_ru)
+    # исключаем '_id' переменную из json цепочки(если цепочка была залита черезе rest)
+    name_ir_list = [name for name in name_ir_list if name != '_id']
 
     for name_ir in name_ir_list:
         excel_list = []
