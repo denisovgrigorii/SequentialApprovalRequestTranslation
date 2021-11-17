@@ -51,13 +51,12 @@ def json_file(unique_dictionary: dict = {}, is_unique_dict: bool = False):
     upload_json_data = {}
     with open('tmp//SequentialApprovalRequest.json', 'r', encoding='utf-8') as input_file:
         sequential_approval_request = json.load(input_file)  # cериализация json файла
-    name_ir_list = list(sequential_approval_request.keys())
+    #name_ir_list = list(sequential_approval_request.keys())
+    # исключаем '_id' переменную из json цепочки(если цепочка была залита черезе rest)
+    name_ir_list = [name for name in sequential_approval_request.keys() if name != '_id']
     # Встроенный справочник транслитерации этапов
     url_translation_ru = jar_unzip()
     dictionary = create_dict(url_translation_ru)
-    # исключаем '_id' переменную из json цепочки(если цепочка была залита черезе rest)
-    name_ir_list = [name for name in name_ir_list if name != '_id']
-
     for name_ir in name_ir_list:
         excel_list = []
         if 'managerStage' in sequential_approval_request[name_ir].keys() and \
