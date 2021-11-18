@@ -76,7 +76,7 @@ def json_file(unique_dictionary: dict = {}, is_unique_dict: bool = False):
                     current_stage.append(stage)
             excel_list.append(SINGLE_STAGE_SEPARATOR.join(current_stage))
             current_stage.clear()
-          # обработка словаря с именами ИС
+        # обработка словаря с именами ИС
         is_dictionary = read_json(IS_DICT)
         if name_ir in is_dictionary.keys():
             upload_json_data[is_dictionary[name_ir]] = excel_list
