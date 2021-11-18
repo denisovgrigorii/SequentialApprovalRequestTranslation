@@ -51,7 +51,6 @@ def json_file(unique_dictionary: dict = {}, is_unique_dict: bool = False):
     upload_json_data = {}
     with open('tmp//SequentialApprovalRequest.json', 'r', encoding='utf-8') as input_file:
         sequential_approval_request = json.load(input_file)  # cериализация json файла
-    #name_ir_list = list(sequential_approval_request.keys())
     # исключаем '_id' переменную из json цепочки(если цепочка была залита черезе rest)
     name_ir_list = [name for name in sequential_approval_request.keys() if name != '_id']
     # Встроенный справочник транслитерации этапов
@@ -77,8 +76,7 @@ def json_file(unique_dictionary: dict = {}, is_unique_dict: bool = False):
                     current_stage.append(stage)
             excel_list.append(SINGLE_STAGE_SEPARATOR.join(current_stage))
             current_stage.clear()
-        upload_json_data[name_ir] = excel_list
-        # обработка словаря с именами ИС
+          # обработка словаря с именами ИС
         is_dictionary = read_json(IS_DICT)
         if name_ir in is_dictionary.keys():
             upload_json_data[is_dictionary[name_ir]] = excel_list
